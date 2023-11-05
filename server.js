@@ -33,12 +33,7 @@ dbConnection.once("open", () => {
   const server = app.listen(443, () => {
     console.log("Server running on port 443")
 
-    const io = require("socket.io")(server, {
-      cors: {
-        origins: "*:*",
-        methods: ["GET", "POST"],
-      },
-    })
+    const io = require("socket.io")(server)
     let onlineUsersList = new Map()
 
     io.on("connection", async (socket) => {
