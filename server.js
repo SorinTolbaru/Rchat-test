@@ -29,12 +29,10 @@ dbConnection.on("error", (error) => {
 
 dbConnection.once("open", () => {
   console.log("Connected to MongoDB")
-
-  const server = app.listen(443, () => {
-    console.log(`Server running on port 443`)
+  const server = app.listen(3000, () => {
+    console.log(`Server running on port 3000`)
 
     const io = require("socket.io")(server, {
-      transports: ["polling"],
       cors: {
         origins: "*:*",
         methods: ["GET", "POST"],
