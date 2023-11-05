@@ -30,16 +30,15 @@ dbConnection.on("error", (error) => {
 dbConnection.once("open", () => {
   console.log("Connected to MongoDB")
 
-  const server = app.listen(443, "0.0.0.0", () => {
+  const server = app.listen(443, () => {
     console.log("Server running on port 443")
 
-    const io = socket(server, {
+    const io = require("socket.io")(server, {
       cors: {
-        origin: "*",
-        credential: true,
+        origins: "*:*",
+        methods: ["GET", "POST"],
       },
     })
-
     let onlineUsersList = new Map()
 
     io.on("connection", async (socket) => {
