@@ -31,7 +31,7 @@ dbConnection.once("open", () => {
   console.log("Connected to MongoDB")
 
   const server = app.listen(443, () => {
-    console.log("Server running on port 443")
+    console.log(`Server running on port 443`)
 
     const io = require("socket.io")(server)
     let onlineUsersList = new Map()
