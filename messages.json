@@ -1,0 +1,137 @@
+[
+    {
+        "message": "Buna,ce faci?",
+        "from": "Sorin",
+        "to": "Tony"
+    },
+    {
+        "message": "Esti online?",
+        "from": "Sorin",
+        "to": "Tony"
+    },
+    {
+        "message": "Da, sunt online",
+        "from": "Tony",
+        "to": "Sorin"
+    },
+    {
+        "message": "Sunt Bine, tu?",
+        "from": "Tony",
+        "to": "Sorin"
+    },
+    {
+        "message": "Buna Ana,ce faci?",
+        "from": "Sorin",
+        "to": "Ana"
+    },
+    {
+        "message": "Bine Sorin?",
+        "from": "Ana",
+        "to": "Sorin"
+    },
+    {
+        "message": "Ce faci boss?",
+        "from": "Andrei",
+        "to": "Sorin"
+    },
+    {
+        "message": "salut",
+        "from": "Sorin",
+        "to": "Sorin"
+    },
+    {
+        "message": "hello",
+        "from": "Sorin",
+        "to": "Ana"
+    },
+    {
+        "message": "ce faci?",
+        "from": "Sorin",
+        "to": "Ana"
+    },
+    {
+        "message": "bine",
+        "from": "Ana",
+        "to": "Sorin"
+    },
+    {
+        "message": "tu ce faci?",
+        "from": "Ana",
+        "to": "Ana"
+    },
+    {
+        "message": "zzz",
+        "from": "Sorin",
+        "to": "Sorin"
+    },
+    {
+        "message": "bn bn bn",
+        "from": "Ana",
+        "to": "Ana"
+    },
+    {
+        "message": "Hello?",
+        "from": "Ana",
+        "to": "Sorin"
+    },
+    {
+        "message": "ciao boss",
+        "from": "Tony",
+        "to": "Tony"
+    },
+    {
+        "message": "buna",
+        "from": "Tony",
+        "to": "Ana"
+    },
+    {
+        "message": "toate bune",
+        "from": "Tony",
+        "to": "Sorin"
+    },
+    {
+        "message": "salut",
+        "from": "Andrei",
+        "to": "Andrei"
+    },
+    {
+        "message": "salut",
+        "from": "Andrei",
+        "to": "Sorin"
+    },
+    {
+        "message": "ceau frate",
+        "from": "Sorin",
+        "to": "Andrei"
+    },
+    {
+        "message": "a",
+        "from": "Sorin",
+        "to": "Andrei"
+    },
+    {
+        "message": "?",
+        "from": "Sorin",
+        "to": "Andrei"
+    },
+    {
+        "message": "salut",
+        "from": "Sorin",
+        "to": "Tudor"
+    },
+    {
+        "message": "ciao",
+        "from": "Tony",
+        "to": "Sorin"
+    },
+    {
+        "message": "buna",
+        "from": "Sorin",
+        "to": "Tony"
+    },
+    {
+        "message": "a",
+        "from": "Sorin",
+        "to": "Tony"
+    }
+]
