@@ -42,6 +42,7 @@ dbConnection.once("open", () => {
     let onlineUsersList = new Map()
 
     io.on("connection", async (socket) => {
+      console.log("works, server is okay")
       socket.on("enter", async (user, password) => {
         socket.user = user
         onlineUsersList.set(user, socket.id)
