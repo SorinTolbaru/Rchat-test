@@ -34,6 +34,7 @@ dbConnection.once("open", () => {
     console.log(`Server running on port 443`)
 
     const io = require("socket.io")(server, {
+      transports: ["polling"],
       cors: {
         origins: "*:*",
         methods: ["GET", "POST"],
