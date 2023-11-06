@@ -1,5 +1,4 @@
 const express = require('express');
-const { log } = require('node:console');
 const { createServer } = require('node:http');
 const { join } = require('node:path');
 const { Server } = require('socket.io');
