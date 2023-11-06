@@ -1,102 +1,172 @@
-const express = require("express")
-const path = require("path")
+const cors = require("cors")
 const socket = require("socket.io")
 const mongoose = require("mongoose")
-const Chat = require("./chat.js")
-
-let userList = []
+const express = require("express")
+const Chat = require("./models/messageSchema.js")
+const Account = require("./models/accountsSchema.js")
+const path = require("path")
 
 const app = express()
+app.use(cors())
+app.use(express.json())
+
+app.use(express.static(path.join(__dirname, "build")))
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "build", "index.html"))
+})
 
 const mongoURL =
-  "mongodb+srv://tolbarusorin:qwerty123@chatx.orqrk1y.mongodb.net/chat-logs"
-mongoose.connect(mongoURL).then((r) => {
+  "mongodb+srv://tolbarusorin:qwerty123@chatx.orqrk1y.mongodb.net/chat-react"
+
+mongoose.connect(mongoURL)
+
+const dbConnection = mongoose.connection
+
+dbConnection.on("error", (error) => {
+  console.error("MongoDB connection error:", error)
+})
+
+dbConnection.once("open", () => {
+  console.log("Connected to MongoDB")
   const server = app.listen(3000, () => {
-    console.log("server running at http://localhost:3000")
-  })
+    console.log(`Server running on port 3000`)
 
-  const io = socket(server, {
-    cors: {
-      origin: "*",
-      credential: true,
-    },
-  })
+    const io = socket(server, {
+      cors: {
+        origin: "*",
+        credential: true,
+      },
+    })
 
-  app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "index.html"))
-  })
+    let onlineUsersList = new Map()
 
-  app.get("/chat", (req, res) => {
-    res.sendFile(path.join(__dirname, "chat.html"))
-  })
-
-  io.on("connection", (socket) => {
-    io.emit("updatelist", userList)
-
-    socket.on("chat message", (msg, id) => {
-      if (!id) {
-        if (msg.includes("/pm ")) {
-          msg = splitMessage(msg, socket.username)
-          io.emit(
-            "chat message",
-            msg,
-            null,
-            "color:white;background:grey",
-            socket.username,
-            u
+    io.on("connection", async (socket) => {
+      socket.on("enter", async (user, password) => {
+        socket.user = user
+        onlineUsersList.set(user, socket.id)
+        console.log(user + " connected")
+        try {
+          const account = await Account.find({ account: socket.user })
+          const accounts = await Account.find({})
+          let validPassword = account[0].password === password ? true : false
+          socket.emit(
+            "update-user-list",
+            account[0].contacts,
+            accounts.map((u) => u.account),
+            validPassword
           )
-        } else {
-          const messageElement = new Chat({
-            username: socket.username,
-            message: msg,
-          })
-          messageElement.save()
-          Chat.find({}).then((e) => {})
-          msg = `${socket.username}: ${msg}`
-          io.emit("chat message", msg)
+        } catch (error) {
+          console.error("Error getting accounts:", error)
         }
-      } else {
-        io.emit("chat message", msg, socket.username)
-      }
-    })
+        io.emit("update-status", Array.from(onlineUsersList.keys()))
+        console.log(Array.from(onlineUsersList.keys()))
+      })
 
-    socket.on("delete message", () => {
-      io.emit("delete message", socket.username)
-    })
+      socket.on("send-message", async (msg) => {
+        const messageElement = new Chat({
+          message: msg.message,
+          from: msg.from,
+          to: msg.to,
+        })
+        messageElement.save()
 
-    socket.on("enter", async (username) => {
-      socket.username = username
-      userList.push(socket.username)
+        //check if a new contact send message and add to contacts
+        const account = await Account.find({ account: msg.to })
+        if (!account[0].contacts.includes(msg.from)) {
+          account[0].contacts.push(msg.from)
+          await Account.findOneAndUpdate(
+            { _id: account[0].id },
+            { $set: { contacts: account[0].contacts } },
+            { new: true, runValidators: true }
+          )
+          socket
+            .to(onlineUsersList.get(msg.to))
+            .emit("update-user-list", account[0].contacts, null, true)
+        }
+        socket.to(onlineUsersList.get(msg.to)).emit("recive-message", msg)
+      })
 
-      io.emit("enter", username)
-      console.log(`${username} connected`)
-      console.log(userList)
-      io.emit("updatelist", userList)
-    })
+      socket.on("get-messages", async (to) => {
+        const messages = await Chat.find({})
+        socket.emit(
+          "get-messages",
+          messages.filter(
+            (e) =>
+              (e.from == socket.user && e.to == to) ||
+              (e.from == to && e.to == socket.user)
+          )
+        )
+        const user = await Account.findOne({ account: socket.user })
+        if (user && !user.contacts.includes(to)) {
+          const id = user.id
+          user.contacts.push(to)
+          await Account.findOneAndUpdate(
+            { _id: id },
+            { $set: { contacts: user.contacts } },
+            { new: true, runValidators: true }
+          )
+        }
+        io.emit("update-status", Array.from(onlineUsersList.keys()))
+      })
 
-    socket.on("disconnect", () => {
-      let user = socket.username
-      if (user) {
-        io.emit("disconnect2", user)
-        userList = userList.filter((e) => e !== user)
-        console.log(`${socket.username} disconnected`)
-        console.log(userList)
-        io.emit("updatelist", userList)
-      }
+      socket.on("delete-messages", async (contact) => {
+        const deleteCondition = {
+          $or: [
+            { from: socket.user, to: contact },
+            { from: contact, to: socket.user },
+          ],
+        }
+        const status = await Chat.deleteMany(deleteCondition)
+        socket.to(onlineUsersList.get(contact)).emit("get-messages", [])
+        console.log(status)
+      })
+
+      socket.on("disconnect", () => {
+        if (socket.user != undefined) {
+          console.log(socket.user + " disconnected")
+          onlineUsersList.delete(socket.user)
+          io.emit("update-status", Array.from(onlineUsersList.keys()))
+          console.log(Array.from(onlineUsersList.keys()))
+        }
+      })
     })
   })
+})
 
-  let u
-  function splitMessage(msg, su) {
-    let c = msg.slice(0, msg.indexOf(" "))
-    let um = msg.slice(c.length + 1, msg.length)
-    u = um.slice(0, um.indexOf(" "))
-    let m = um.slice(um.indexOf(" "))
-    let M = `${su} > ${u}:${m}`
-    if (u.length == 0 || um.includes(" ") == false) {
-      M = `Invalid pm`
+app.post("/login", async (req, res) => {
+  const { user, password } = req.body
+  try {
+    const account = await Account.findOne({ account: user })
+    if (account?.password === password) {
+      res.status(200).json({ success: true, message: "Login successful" })
+    } else {
+      res.status(206).json({ success: false, message: "Wrong password" })
     }
+  } catch (error) {
+    res.status(206).json({ success: false, message: "No user found" })
+  }
+})
 
-    return M
+app.post("/register", async (req, res) => {
+  const { user, password } = req.body
+  try {
+    let found = await Account.findOne({ account: user })
+    if (found) {
+      res.status(206).json({ success: false, message: "User already exists" })
+    } else {
+      let newUser = new Account({
+        account: user,
+        contacts: [],
+        password: password,
+      })
+      newUser.save()
+      res
+        .status(200)
+        .json({ success: true, message: "Registered and connected" })
+    }
+  } catch (error) {
+    console.error("Error registering user:", error)
+    res.status(500).json({ success: false, message: "Internal Server Error" })
   }
 })
