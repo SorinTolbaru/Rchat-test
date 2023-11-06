@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<style>
+    body{margin: 0;height: 100vh;background-color: grey;}
+    form{
+        display: flex;
+        font-size: 2rem;
+        flex-direction: column;
+        width: 90%;
+        height: 50%;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid black;
+        border-radius: 10px;
+        position: relative;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%,-50%);
+        gap: 10px;
+        background: aliceblue;
+    }
+
+    input{width: 50%;height: 10%;}
+</style>
+<body>
+    <form action="" id="form" >
+        <label for="username">What's your name?</label>
+        <input type="text" id="input">
+        <input type="submit" value="Enter Chat">
+    </form>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    const socket = io();
+    socket.on("updatelist",(list)=>{
+        const form = document.getElementById('form');
+        const input = document.getElementById('input');
+
+    form.addEventListener("submit",function(e){
+        e.preventDefault()
+        if(!list.includes(input.value)){
+            sessionStorage.setItem("username",input.value)
+        window.location.href = "/chat"
+        }else{
+            console.log("user alreay on chat");
+        }
+
+    })
+    })
+    
+</script>
+
+</body>
+</html>
